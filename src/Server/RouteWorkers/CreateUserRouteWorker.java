@@ -39,13 +39,13 @@ public class CreateUserRouteWorker implements RouteWorker {
         String domain = username.equalsIgnoreCase("admin") ? "\\S+" : username;
 
 
-        int result = 0;
         try {
             db.open();
-            result = db.insertUser(user, token, domain);
-            db.close();
+            db.insertUser(user, token, domain);
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
+        } finally {
+            db.close();
         }
 
         // Print the data
@@ -55,7 +55,7 @@ public class CreateUserRouteWorker implements RouteWorker {
         // Response:
         StringBuilder body = new StringBuilder();
         if( request.getQuery("format").equalsIgnoreCase("plain") ) {
-           body.append("created user: ").append(username).append(" (").append(result).append(")");
+           body.append("created user: ").append(username);
         } else {
             body.append("{ \"message\": \"user creation successful\"}");
         }

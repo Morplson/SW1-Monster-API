@@ -4,13 +4,12 @@ import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
-import Server.Models.Cards.Card;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 
-public class CreatePackageRouteWorker implements RouteWorker {
+public class EditUserDeckRouteWorker implements RouteWorker {
 
     @Override
     public HTTPPackage process(HTTPPackage request, MiddlewareRegister mr) {
@@ -20,31 +19,34 @@ public class CreatePackageRouteWorker implements RouteWorker {
 
         // ---- Check Authentication ---- //
         String token = request.getHeader("Authorization");
-        if(!sm.hasAccess(token, "package.new")){
+
+        String username = sm.getUsername(token);
+
+        if(!sm.hasAccess(token, username)){
             return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource package.new");
         }
 
         // ---- Parse JSON ---- //
         String json = request.getBodyPlain();
-        ArrayList<Card> pack;
+        ArrayList<String> card_ids = new ArrayList<>();
         try {
             ObjectMapper mapper = new ObjectMapper();
-             pack = mapper.readValue(json, new TypeReference<ArrayList<Card>>(){});
+            card_ids = mapper.readValue(json, new TypeReference<ArrayList<String>>(){});
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(400, "Invalid JSON","Invalid JSON: " + e.getMessage());
         }
 
-        System.out.println(pack);
+        if(card_ids.size()!=4){
+            return HTTPPackage.generateErrorResponse(400, "Not enough cards","Not enough cards in request");
+        }
+
+        System.out.println(card_ids);
 
         // ---- Process in Database ---- //
         try {
             db.open();
-            for(int i = 0; i < pack.size(); i++){
-                db.insertCard(pack.get(i));
-            }
-            int pid = db.insertPack("Generic Pack", 5);
-            for(int i = 0; i < pack.size(); i++){
-                db.addCardToPack(pid, pack.get(i).getId());
+            for(int i = 0; i < card_ids.size(); i++){
+                db.updateCardInUser(username, card_ids.get(i), true);
             }
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
@@ -54,14 +56,8 @@ public class CreatePackageRouteWorker implements RouteWorker {
 
 
         // ---- Generate Response ---- //
-        StringBuilder body = new StringBuilder();
-        if( request.getQuery("format").equalsIgnoreCase("plain") ) {
-            //body.append("created user: ").append(username).append(" (").append(result).append(")");
-        } else {
-            body.append("{ \"message\": \"package creation successful\"}");
-        }
-
-        return HTTPPackage.generateBasicResponse(body.toString());
+        boolean plain = request.getQuery("format").equalsIgnoreCase("plain");
+        return HTTPPackage.generateBasicResponse("reassigned cards to deck", plain);
 
     }
 }

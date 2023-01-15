@@ -1,38 +1,36 @@
-package Server.Models.Cards.Actors;
+package Server.Models.Cards;
 
-import Server.Models.Cards.Element;
-import Server.Models.Cards.Monster;
-import Server.Models.Cards.Rules;
+import Server.Models.Cards.Effects.Bleeding;
+import Server.Models.Cards.Effects.Burning;
+import Server.Models.Cards.Effects.Healing;
 
 import java.util.Random;
 
-public class OldCard extends Actor {
+public class CardWrapper{
+    Card host;
 
     private float virtualHealth = 0;
+    private float damageMultipyer = 1;
+    private Burning burning = new Burning(0,0);
+    private Healing healing = new Healing(0,0);
+    private Bleeding bleeding = new Bleeding(0,0);
     private boolean virtualCritical = false;
 
-    public OldCard(String id, String name, int damage, int health, Element element, Monster monster, double criticalChance){
-        super(id, name, damage, health, element, monster, criticalChance);
+
+    public CardWrapper(Card card){
+        this.host = card;
+        this.virtualHealth = this.host.getHealth();
     }
 
-    public OldCard(String name, int damage, int health, Element element, Monster monster, double criticalChance){
-        super(null, name, damage, health, element, monster, criticalChance);
 
-        String id = (
-            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)) +"-"+
-            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)) +"-"+
-            String.valueOf(new Random().nextInt(Integer.MAX_VALUE)) +"-"+
-            String.valueOf(new Random().nextInt(Integer.MAX_VALUE))
-        );
 
-        this.setId(id);
-    }
+
 
 
     @Override
-    public String attackString(Actor opponent) {
+    public String attackString(CardWrapper opponent) {
         StringBuilder sb = new StringBuilder();
-        Actor oc = (Actor) opponent;
+        CardWrapper oc = (CardWrapper) opponent;
 
         if(virtualCritical) {
             sb.append("Critical hit on ");
@@ -40,7 +38,7 @@ public class OldCard extends Actor {
             sb.append("Attack on ");
         }
 
-        sb.append( oc.getName() );
+        sb.append( oc.get.getName() );
 
         short rulecode = new Rules(this, oc).checkRules();
 
@@ -66,7 +64,7 @@ public class OldCard extends Actor {
     }
 
     @Override
-    public float calculateDamage(Actor opponent) {
+    public float calculateDamage(OldActor opponent) {
         float outDamage = this.getDamage();
         Random rand = new Random();
 
@@ -112,7 +110,7 @@ public class OldCard extends Actor {
     @Override
     public void updateValues() {
         if(new Random().nextDouble(0,1) < this.getCriticalChance()) {
-           this.virtualCritical = true;
+            this.virtualCritical = true;
         } else {
             this.virtualCritical = false;
         }
@@ -156,15 +154,6 @@ public class OldCard extends Actor {
 
         return sb.toString();
     }
-
-
-
-
-
-
-
-
-
 
 
 

@@ -40,9 +40,10 @@ public class EditUserRouteWorker implements RouteWorker {
         try {
             db.open();
             result = db.updateUserByUsername(searchForThisUser, user);
-            db.close();
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
+        }finally {
+            db.close();
         }
 
         String body = "updated user: " + searchForThisUser + " (" + result + ")";

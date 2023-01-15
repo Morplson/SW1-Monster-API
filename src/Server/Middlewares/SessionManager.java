@@ -8,27 +8,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class SessionManager implements Middleware{
-
-    HashMap<String, User> sessionData;
-
-
-
-    HashMap<String, String> accessData;
-    HashMap<String, Long> timestamp;
-
-    //long timeout = 0;
+    HashMap<String, AccessData> accessData;
 
     public SessionManager() {
-        this.sessionData = new HashMap<String, User>();
-        this.accessData = new HashMap<String, String>();
-        this.timestamp = new HashMap<String, Long>();
-
-        this.accessData.put("Basic admin-mtcgToken", "\\S+");
+        this.accessData = new HashMap<String, AccessData>();
     }
 
-    public boolean register(String token, String domain) {
+    public boolean register(String token, String domain, String username) {
         if (!this.accessData.containsKey(token)) {
-            this.accessData.put(token, domain);
+            AccessData ad = new AccessData(domain, username);
+            this.accessData.put(token, ad);
             return true;
         }
 
@@ -45,17 +34,14 @@ public class SessionManager implements Middleware{
     }
 
     public boolean hasAccess(String token, String domainName) {
-        //if (!this.isNotTimedout(token)) {
-        //    return false;
-        //}
 
         if (!this.accessData.containsKey(token)) {
             return false;
         }
 
-        String value = this.accessData.get(token);
+        AccessData ad = this.accessData.get(token);
 
-        Pattern p = Pattern.compile(value);
+        Pattern p = Pattern.compile(ad.getDomain());
 
         // Ein Matcher-Objekt wird erstellt, um den Pfad der Anfrage mit dem Schlüssel zu vergleichen.
         Matcher matcher = p.matcher(domainName);
@@ -68,13 +54,14 @@ public class SessionManager implements Middleware{
         return true;
     }
 
-    public HashMap<String, String> getAccessData() {
-        return accessData;
+    public String getUsername(String token) {
+        AccessData ad = accessData.get(token);
+        return ad.getUsername();
     }
 
-    public void setAccessData(HashMap<String, String> accessData) {
-        this.accessData = accessData;
+    public HashMap<String, AccessData> getAccessData() {
+        return this.accessData;
     }
-
-
 }
+
+

@@ -1,30 +1,28 @@
-package Server.Models;
+package Server.Models.Cards;
 
-import Server.Models.Cards.Element;
-import Server.Models.Cards.Monster;
+import Server.Models.Serializable;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class Card implements Serializable {
-    @JsonProperty("Id")
-    private String id;
-    @JsonProperty("Name")
-    private String name;
+    @JsonProperty(value = "Id")
+    private String id = null;
+    @JsonProperty(value = "Name")
+    private String name = null;
 
-    @JsonProperty("Damage")
-    private Float damage = 0f;
-    @JsonProperty("Health")
-    private Float health = 0f;
+    @JsonProperty(value = "Damage")
+    private Float damage = null;
+    @JsonProperty(value = "Health")
+    private Float health = null;
 
-    @JsonProperty("Element")
-    private Element element;
-    @JsonProperty("Monster")
-    private Monster monster;
-    @JsonProperty(value = "CriticalChance", defaultValue = "10.0")
-    private Double criticalChance;
+    @JsonProperty(value = "Element")
+    private Element element = null;
+    @JsonProperty(value = "Monster")
+    private Monster monster = null;
+    @JsonProperty(value = "CriticalChance")
+    private Float criticalChance = null;
 
     @JsonCreator
     public Card(@JsonProperty(value = "Id", required = true) String id,
@@ -33,7 +31,7 @@ public class Card implements Serializable {
                 @JsonProperty(value = "Health") Float health,
                 @JsonProperty(value = "Element") Element element,
                 @JsonProperty(value = "Monster") Monster monster,
-                @JsonProperty(value = "CriticalChance") Double criticalChance) {
+                @JsonProperty(value = "CriticalChance") Float criticalChance) {
         this.id = id;
         this.name = name;
         this.damage = damage;
@@ -46,8 +44,9 @@ public class Card implements Serializable {
     }
 
     private Element inferElementFromName(String name) {
+        name = name.toLowerCase();
         for (Element e : Element.values()) {
-            if (name.contains(e.name())) {
+            if (name.contains(e.name().toLowerCase())) {
                 return e;
             }
         }
@@ -55,8 +54,9 @@ public class Card implements Serializable {
     }
 
     private Monster inferMonsterFromName(String name) {
+        name = name.toLowerCase();
         for (Monster m : Monster.values()) {
-            if (name.contains(m.name())) {
+            if (name.contains(m.name().toLowerCase())) {
                 return m;
             }
         }
@@ -108,6 +108,13 @@ public class Card implements Serializable {
         return sb.toString();
     }
 
+    public boolean isSpell() {
+        if (monster == Monster.SPELL){
+            return true;
+        }
+        return false;
+    }
+
 
     public String getId() {
         return id;
@@ -157,11 +164,11 @@ public class Card implements Serializable {
         this.monster = monster;
     }
 
-    public Double getCriticalChance() {
+    public Float getCriticalChance() {
         return criticalChance;
     }
 
-    public void setCriticalChance(Double criticalChance) {
+    public void setCriticalChance(Float criticalChance) {
         this.criticalChance = criticalChance;
     }
 }

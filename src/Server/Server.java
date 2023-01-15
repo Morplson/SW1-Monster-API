@@ -59,15 +59,15 @@ public class Server implements Runnable{
 
         //create packages (done by "admin")
         routingTable.addPost("\\/packages", new CreatePackageRouteWorker());
-        /** //acquire packages
+         //acquire packages
         routingTable.addPost("\\/transactions\\/packages", new AcquirePackageRouteWorker());
-        //show all cards
+         //show all cards
         routingTable.addGet("\\/cards", new ShowUserCardsRouteWorker());
         //show deck (uses get params)
         routingTable.addGet("\\/deck", new ShowUserDeckRouteWorker());
         //configure deck
         routingTable.addPut("\\/deck", new EditUserDeckRouteWorker());
-
+        /**
 
 
         //battle

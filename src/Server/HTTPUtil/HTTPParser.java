@@ -32,23 +32,24 @@ public class HTTPParser {
         }
 
         // Die Query-Parameter werden aus dem URI des Requests extrahiert und dem Query-HashMap des HTTPPackages hinzugefügt.
-        int queryStartIndex = completeUrl.indexOf("?");
-        if (queryStartIndex > 0) {
-            //Sets URI if there is a query string
-            uri = line.substring(0, queryStartIndex);
-            parsedPackageContainer.setUri(uri);
+        String[] splitForQueri = completeUrl.split("\\?");
+        uri = splitForQueri[0];
+        System.out.println(uri);
+        if (splitForQueri.length > 1) {
 
             //Sets Query-Parameter if there is a query string
-            String queryString = completeUrl.substring(queryStartIndex + 1);
-            String[] queryElements = queryString.split("&");
+            String queryString = splitForQueri[1];
+            System.out.println(queryString);
+            String[] queryElements = queryString.split("\\&");
             for (String queryElement : queryElements) {
-                String[] parameter = queryElement.split("=");
+                System.out.println(queryElement);
+                String[] parameter = queryElement.split("\\=");
                 parsedPackageContainer.addQuery(parameter[0], parameter[1]);
             }
-        }else{
-            //Sets URI if there is no query string
-            parsedPackageContainer.setUri(completeUrl);
         }
+        //Sets URI if there is no query string
+        parsedPackageContainer.setUri(uri);
+
 
         // These next 6 lines get the text of a httprequest by first getting a line, then
         line = buffread.readLine();

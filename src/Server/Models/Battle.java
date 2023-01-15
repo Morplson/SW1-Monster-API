@@ -1,7 +1,6 @@
 package Server.Models;
 
-import Server.Models.Cards.Actors.Actor;
-import Server.Models.Cards.Actors.OldCard;
+import Server.Models.OldCards.Actors.OldActor;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -10,8 +9,8 @@ public class Battle {
     User p1;
     User p2;
 
-    ArrayList<Actor> vdP1;
-    ArrayList<Actor> vdP2;
+    ArrayList<OldActor> vdP1;
+    ArrayList<OldActor> vdP2;
 
     int pointsP1 = 0;
     int pointsP2 = 0;
@@ -20,12 +19,9 @@ public class Battle {
     float burnchance = 0.2f;
 
 
-    public Battle(User player1, ArrayList<OldCard> p1Deck, User player2, ArrayList<OldCard> p2Deck) {
+    public Battle(User player1,User player2) {
         this.p1 = player1;
         this.p2 = player2;
-        
-        this.vdP1 = new ArrayList<Actor>(p1Deck);
-        this.vdP2 = new ArrayList<Actor>(p2Deck);
         
         this.setupBattle();
         
@@ -60,8 +56,8 @@ public class Battle {
     public void attackRound() {
         Collections.shuffle(this.vdP1);
         Collections.shuffle(this.vdP2);
-        Actor stagedCard1 = this.vdP1.remove(0);
-        Actor stagedCard2 = this.vdP2.remove(0);
+        OldActor stagedCard1 = this.vdP1.remove(0);
+        OldActor stagedCard2 = this.vdP2.remove(0);
 
 
         //attack a1 -> a2

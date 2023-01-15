@@ -1,6 +1,8 @@
-package Server.Models.Cards;
+package Server.Models.OldCards;
 
-import Server.Models.Cards.Actors.OldCard;
+import Server.Models.Cards.Element;
+import Server.Models.Cards.Monster;
+import Server.Models.OldCards.Actors.OldCard;
 
 import java.util.Arrays;
 import java.util.HashMap;

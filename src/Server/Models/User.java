@@ -1,5 +1,6 @@
 package Server.Models;
 
+import Server.Models.Cards.Card;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -16,20 +17,20 @@ public class User implements Serializable {
 
 
     @JsonProperty(value = "Username", required = true)
-    private String username;
+    private String username = null;
     @JsonProperty(value = "Password", required = true)
-    private String password;
+    private String password = null;
 
     @JsonProperty(value = "Coins")
-    private Integer coins;
+    private Integer coins = null;
     @JsonProperty(value = "Name")
-    private String name;
+    private String name = null;
     @JsonProperty(value = "Bio")
-    private String bio;
+    private String bio = null;
     @JsonProperty(value = "Image")
-    private String image;
+    private String image = null;
     @JsonProperty(value = "EloValue")
-    private Integer eloValue;
+    private Integer eloValue = null;
 
     @JsonProperty(value = "Stack")
     ArrayList<Card> stack = new ArrayList<Card>();
@@ -39,11 +40,11 @@ public class User implements Serializable {
     @JsonCreator
     public User(@JsonProperty(value = "Username", required = true) String username,
                 @JsonProperty(value = "Password", required = true) String password,
-                @JsonProperty(value = "Coins") int coins,
+                @JsonProperty(value = "Coins") Integer coins,
                 @JsonProperty(value = "Name") String name,
                 @JsonProperty(value = "Bio") String bio,
                 @JsonProperty(value = "Image") String image,
-                @JsonProperty(value = "EloValue") int elo_value,
+                @JsonProperty(value = "EloValue") Integer elo_value,
                 @JsonProperty(value = "Stack") ArrayList<Card> stack,
                 @JsonProperty(value = "Deck") ArrayList<Card> deck) {
         this.username = username;

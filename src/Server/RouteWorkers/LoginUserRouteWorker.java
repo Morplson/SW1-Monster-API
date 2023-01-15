@@ -42,9 +42,10 @@ public class LoginUserRouteWorker implements RouteWorker {
             db.open();
             token = db.getUserToken(username, password);
             accessDomain = db.getUserAccessDomain(username, password);
-            db.close();
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
+        }finally {
+            db.close();
         }
 
         if (token == null || accessDomain == null) {
@@ -52,7 +53,7 @@ public class LoginUserRouteWorker implements RouteWorker {
         }
 
         //"login user"
-        if(!sm.register(token, accessDomain)){
+        if(!sm.register(token, accessDomain, username)){
             return HTTPPackage.generateErrorResponse(400, "Bad Request", "Already loged in");
         }
 

@@ -1,11 +1,11 @@
 package Server.Models.Cards;
 
-import Server.Models.Cards.Actors.Actor;
+import Server.Models.OldCards.Actors.OldActor;
 
 public class Rules {
 
-    Actor aCard;
-    Actor bCard;
+    Card aCard;
+    Card bCard;
 
     Element aElement;
     Element bElement;
@@ -15,10 +15,10 @@ public class Rules {
 
     /**
      * Returns rules on cases for "A attacks B"
-     * @param a Actor A
-     * @param b Actor B
+     * @param a OldActor A
+     * @param b OldActor B
      */
-    public Rules(Actor a, Actor b) {
+    public Rules(Card a, Card b) {
         aCard = a;
         bCard = b;
         aElement = a.getElement();

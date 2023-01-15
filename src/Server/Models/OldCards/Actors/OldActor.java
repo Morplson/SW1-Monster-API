@@ -1,4 +1,4 @@
-package Server.Models.Cards.Actors;
+package Server.Models.OldCards.Actors;
 
 import Server.Models.Cards.Element;
 import Server.Models.Cards.Monster;
@@ -8,8 +8,8 @@ import Server.Models.Cards.Monster;
  * @author Bingus
  * @version 0.0
  */
-public abstract class Actor {
-    public Actor() {}
+public abstract class OldActor {
+    public OldActor() {}
 
 
     private String id;
@@ -25,7 +25,7 @@ public abstract class Actor {
     private double criticalChance;
 
 
-    public Actor(String id, String name, int damage, int health, Element element, Monster monster, double criticalChance){
+    public OldActor(String id, String name, int damage, int health, Element element, Monster monster, double criticalChance){
         this.id = id;
         this.name = name;
         this.damage = damage;
@@ -43,7 +43,7 @@ public abstract class Actor {
         return false;
     }
 
-    public abstract String attackString(Actor opponent);
+    public abstract String attackString(OldActor opponent);
 
     public void setDamage(float damage) {
         this.damage = damage;
@@ -53,7 +53,7 @@ public abstract class Actor {
         this.health = health;
     }
 
-    public abstract float calculateDamage(Actor opponent);
+    public abstract float calculateDamage(OldActor opponent);
     public abstract void resetVirtualHealth();
     public abstract float calculateVirtualHealth(float damage);
     public abstract void updateValues();

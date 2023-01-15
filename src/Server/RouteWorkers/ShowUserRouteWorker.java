@@ -28,9 +28,10 @@ public class ShowUserRouteWorker implements RouteWorker {
         try {
             db.open();
             user = db.getUserByUsername(searchForThisUser);
-            db.close();
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
+        }finally {
+            db.close();
         }
 
         return HTTPPackage.generateBasicResponse(user.toString());

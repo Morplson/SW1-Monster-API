@@ -44,7 +44,16 @@ public class HTTPPackage {
     }
 
     public static HTTPPackage generateErrorResponse(int code, String status, String message){
+        return generateErrorResponse(code, status, message, false);
+    }
+
+    public static HTTPPackage generateErrorResponse(int code, String status, String message, boolean plain){
+
         HTTPPackage paket = new HTTPPackage();
+
+        if (!plain) {
+            message = "{ message: '" + message + "' }";
+        }
 
         paket.statusCode = code;
         paket.statusText = status;
@@ -55,8 +64,18 @@ public class HTTPPackage {
         return paket;
     }
 
+
     public static HTTPPackage generateBasicResponse(String message){
+        return generateBasicResponse(message, false);
+    }
+
+    public static HTTPPackage generateBasicResponse(String message, boolean plain){
+
         HTTPPackage paket = new HTTPPackage();
+
+        if (!plain) {
+            message = "{ message: '" + message + "' }";
+        }
 
         paket.statusCode = 200;
         paket.statusText = "OK";

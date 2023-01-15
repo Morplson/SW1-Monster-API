@@ -1,16 +1,13 @@
-package Server;
+package Server.RouteWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
-import Server.Models.Card;
-import Server.Models.User;
-import Server.RouteWorkers.RouteWorker;
+import Server.Models.Cards.Card;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ShowUserCardsRouteWorker implements RouteWorker {
 
@@ -69,4 +66,5 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
 
         return HTTPPackage.generateBasicResponse(body.toString());
 
-    }}
+    }
+}

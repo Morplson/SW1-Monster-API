@@ -1,6 +1,7 @@
 package Server.RouteWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
+import Server.Middlewares.AccessData;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
@@ -23,7 +24,7 @@ public class ShowSessionsRouteWorker implements RouteWorker {
 
         StringBuilder sb = new StringBuilder("Running sessions list:").append(System.lineSeparator());
 
-        HashMap<String, String> accounts = sm.getAccessData();
+        HashMap<String, AccessData> accounts = sm.getAccessData();
         for (String key : accounts.keySet()) {
             sb.append(key).append(" = ").append(accounts.get(key)).append(";").append(System.lineSeparator());
         }
