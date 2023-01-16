@@ -3,7 +3,11 @@ package Server;
 import Server.HTTPUtil.HTTPPackage;
 import Server.HTTPUtil.HTTPParser;
 import Server.Middlewares.*;
-import Server.RouteWorkers.*;
+import Server.RouteWorkers.BattleWorkers.BattleRouteWorker;
+import Server.RouteWorkers.BattleWorkers.ShowScoreboardRouteWorker;
+import Server.RouteWorkers.BattleWorkers.ShowUserStatsRouteWorker;
+import Server.RouteWorkers.CardWorkers.*;
+import Server.RouteWorkers.UserWorkers.*;
 import Server.Routing.InvalidRouteException;
 import Server.Routing.RoutingTable;
 
@@ -29,12 +33,16 @@ public class Server implements Runnable{
         // Set up sessionmanager
         SessionManager sm = new SessionManager();
 
+        // Set up BattleQueue
+        BattleQueue bq = new BattleQueue();
+
         // Set up middleweare
         MiddlewareRegister middlewareRegister = new MiddlewareRegister();
 
         // Register middlewares
         middlewareRegister.register("db", db); //register database as "db"
         middlewareRegister.register("sm", sm); //sessionmanager database as "sm"
+        middlewareRegister.register("bq", bq); //battlequeue database as "bq"
 
 
 
@@ -67,7 +75,6 @@ public class Server implements Runnable{
         routingTable.addGet("\\/deck", new ShowUserDeckRouteWorker());
         //configure deck
         routingTable.addPut("\\/deck", new EditUserDeckRouteWorker());
-        /**
 
 
         //battle
@@ -77,7 +84,10 @@ public class Server implements Runnable{
         //scoreboard
         routingTable.addGet("/score", new ShowScoreboardRouteWorker());
 
-        //check trading deals
+        /**
+
+
+         //check trading deals
         routingTable.addGet("/tradings", new ShowTradingDealRouteWorker());
         //create trading deal
         routingTable.addPost("/tradings", new CreateTradingDealRouteWorker());

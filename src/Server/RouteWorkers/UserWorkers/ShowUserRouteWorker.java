@@ -1,10 +1,11 @@
-package Server.RouteWorkers;
+package Server.RouteWorkers.UserWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
 import Server.Models.User;
+import Server.RouteWorkers.RouteWorker;
 
 import java.util.HashMap;
 

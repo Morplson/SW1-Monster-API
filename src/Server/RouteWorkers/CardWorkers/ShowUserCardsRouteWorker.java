@@ -1,10 +1,11 @@
-package Server.RouteWorkers;
+package Server.RouteWorkers.CardWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
 import Server.Models.Cards.Card;
+import Server.RouteWorkers.RouteWorker;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.ArrayList;
@@ -19,10 +20,15 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
 
         // ---- Check Authentication ---- //
         String token = request.getHeader("Authorization");
+
+        if (!sm.isLoggedIn(token)) {
+            return HTTPPackage.generateErrorResponse(401, "Unauthorized", "Not logged in");
+        }
+
         String username = sm.getUsername(token);
 
         if(!sm.hasAccess(token, username)){
-            return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource package.new");
+            return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource user."+username+".cards");
         }
 
         // ---- Process in Database ---- //
@@ -41,7 +47,8 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
 
         // ---- Generate Response ---- //
         StringBuilder body = new StringBuilder();
-        if( request.getQuery("format").equalsIgnoreCase("plain") ) {
+        boolean plain = request.getQuery("format").equalsIgnoreCase("plain");
+        if( plain ) {
             body.append("####################################\n");
             body.append("#                                  #\n");
             body.append("#     User Cards                   #\n");
@@ -64,7 +71,7 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
             body.append("]");
         }
 
-        return HTTPPackage.generateBasicResponse(body.toString());
+        return HTTPPackage.generateBasicResponse(body.toString(), plain);
 
     }
 }

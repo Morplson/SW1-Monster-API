@@ -1,6 +1,8 @@
 package Server.Models.Cards.Effects;
 
 
+import Server.Misc.Finetuners;
+
 public class Bleeding extends StatusEffect{
 
 
@@ -13,6 +15,8 @@ public class Bleeding extends StatusEffect{
         float tempValue = super.iterateValue();
 
         tempValue = (float) (tempValue+(Math.pow(tempValue, Math.E)*Math.pow(Math.E, -super.getLifetime()) ));
+
+        tempValue /= Finetuners.BLEEDING_NERF;
 
         return tempValue;
     }

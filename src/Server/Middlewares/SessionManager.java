@@ -33,6 +33,14 @@ public class SessionManager implements Middleware{
         return false;
     }
 
+    public boolean isLoggedIn(String token) {
+        if (this.accessData.containsKey(token)) {
+            return true;
+        }
+
+        return false;
+    }
+
     public boolean hasAccess(String token, String domainName) {
 
         if (!this.accessData.containsKey(token)) {

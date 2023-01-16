@@ -1,10 +1,11 @@
-package Server.RouteWorkers;
+package Server.RouteWorkers.CardWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
 import Server.Models.Cards.Card;
+import Server.RouteWorkers.RouteWorker;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.ArrayList;

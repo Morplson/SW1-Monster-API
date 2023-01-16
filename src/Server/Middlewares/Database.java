@@ -367,7 +367,8 @@ public class Database implements Middleware {
     public HashMap<String, Object> getRandomPack() throws SQLException{
 
         // ----- BUILDING QUERY ----- //
-        String sql = "SELECT * FROM packs ORDER BY random() LIMIT 1";
+        //String sql = "SELECT * FROM packs ORDER BY random() LIMIT 1";
+        String sql = "SELECT * FROM packs LIMIT 1";
 
         // ----- SENDING QUERY ----- //
         PreparedStatement stmt = this.connection.prepareStatement(sql);
@@ -478,7 +479,7 @@ public class Database implements Middleware {
         stmt.executeUpdate();
 
         // Finally insert the card to the second user
-        sql = "INSERT INTO users_cards (user_id, card_id, deck) VALUES (?,?,?)";
+        sql = "INSERT INTO users_cards (user_id, card_id) VALUES (?,?)";
         stmt = this.connection.prepareStatement(sql);
         stmt.setString(1, toUserId);
         stmt.setString(2, cardId);

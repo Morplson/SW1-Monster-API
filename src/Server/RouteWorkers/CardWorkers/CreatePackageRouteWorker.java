@@ -1,15 +1,17 @@
-package Server.RouteWorkers;
+package Server.RouteWorkers.CardWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
-import Server.Models.User;
+import Server.Models.Cards.Card;
+import Server.RouteWorkers.RouteWorker;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
-public class AcquirePackageRouteWorker implements RouteWorker {
+public class CreatePackageRouteWorker implements RouteWorker {
 
     @Override
     public HTTPPackage process(HTTPPackage request, MiddlewareRegister mr) {
@@ -19,42 +21,32 @@ public class AcquirePackageRouteWorker implements RouteWorker {
 
         // ---- Check Authentication ---- //
         String token = request.getHeader("Authorization");
-        String username = sm.getUsername(token);
-
-        if(!sm.hasAccess(token, username)){
+        if(!sm.hasAccess(token, "package.new")){
             return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource package.new");
         }
+
+        // ---- Parse JSON ---- //
+        String json = request.getBodyPlain();
+        ArrayList<Card> pack;
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+             pack = mapper.readValue(json, new TypeReference<ArrayList<Card>>(){});
+        } catch (Exception e) {
+            return HTTPPackage.generateErrorResponse(400, "Invalid JSON","Invalid JSON: " + e.getMessage());
+        }
+
+        System.out.println(pack);
 
         // ---- Process in Database ---- //
         try {
             db.open();
-
-            System.out.println(1);
-            User user = db.getUserByUsername(username);
-            int coins = user.getCoins();
-            System.out.println(2);
-            HashMap<String, Object> pack = db.getRandomPack();
-            int price = (Integer) pack.get("price");
-            System.out.println(3);
-
-            if(coins < price){
-                return HTTPPackage.generateErrorResponse(402, "Insufficient balance", "You don't have enough coins to buy this package");
+            for(int i = 0; i < pack.size(); i++){
+                db.insertCard(pack.get(i));
             }
-
-            user.setCoins(coins-price);
-            db.updateUserByUsername(username, user);
-
-            int pack_id = (Integer) pack.get("id");
-            ArrayList<String> card_ids = db.getCardIdsByPackIdFromPackCards(pack_id);
-            System.out.println(card_ids.size());
-
-            for(String card_id : card_ids){
-                db.addCardToUser(username, card_id, false);
-                System.out.println(card_id);
+            int pid = db.insertPack("Generic Pack", 5);
+            for(int i = 0; i < pack.size(); i++){
+                db.addCardToPack(pid, pack.get(i).getId());
             }
-
-            db.removePackByPackIdCascade(pack_id);
-
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
         }finally {
@@ -67,7 +59,7 @@ public class AcquirePackageRouteWorker implements RouteWorker {
         if( request.getQuery("format").equalsIgnoreCase("plain") ) {
             //body.append("created user: ").append(username).append(" (").append(result).append(")");
         } else {
-            body.append("{ \"message\": \"package bought\"}");
+            body.append("{ \"message\": \"package creation successful\"}");
         }
 
         return HTTPPackage.generateBasicResponse(body.toString());

@@ -1,19 +1,23 @@
 package Server.Models.Cards;
 
+import Server.Misc.Finetuners;
 import Server.Models.Cards.Effects.Bleeding;
 import Server.Models.Cards.Effects.Burning;
 import Server.Models.Cards.Effects.Healing;
+import Server.Models.Cards.Effects.StatusEffect;
 
+import java.util.ArrayList;
 import java.util.Random;
 
 public class CardWrapper{
     Card host;
 
-    private float virtualHealth = 0;
-    private float damageMultipyer = 1;
-    private Burning burning = new Burning(0,0);
-    private Healing healing = new Healing(0,0);
-    private Bleeding bleeding = new Bleeding(0,0);
+    private float virtualHealth = 0f;
+    private Burning burning = new Burning(0f,0);
+    private Healing healing = new Healing(0f,0);
+    private Bleeding bleeding = new Bleeding(0f,0);
+
+    private ArrayList<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
     private boolean virtualCritical = false;
 
 
@@ -22,15 +26,32 @@ public class CardWrapper{
         this.virtualHealth = this.host.getHealth();
     }
 
+    // -------------- Setter / Getter
+    public Card getHost() {
+        return host;
+    }
 
+    public void setHost(Card host) {
+        this.host = host;
+    }
 
+    public void addStatusEffect(StatusEffect se){
+        this.statusEffects.add(se);
+    }
 
+    public boolean isVirtualCritical() {
+        return virtualCritical;
+    }
 
+    public void setVirtualCritical(boolean virtualCritical) {
+        this.virtualCritical = virtualCritical;
+    }
 
-    @Override
-    public String attackString(CardWrapper opponent) {
+    // ----------------- For Battle -----------------
+    public String attackString(String opponentName, Rules rules) {
         StringBuilder sb = new StringBuilder();
-        CardWrapper oc = (CardWrapper) opponent;
+
+        sb.append(this.host.getName()).append(": ");
 
         if(virtualCritical) {
             sb.append("Critical hit on ");
@@ -38,42 +59,51 @@ public class CardWrapper{
             sb.append("Attack on ");
         }
 
-        sb.append( oc.get.getName() );
+        sb.append( opponentName );
 
-        short rulecode = new Rules(this, oc).checkRules();
+        short rulecode = rules.checkRules();
 
-        sb.append( " resulted in " );
-        switch (rulecode) {
-            case -2:
-                sb.append( "total failure!" );
-                break;
-            case -1:
-                sb.append( "INSANE DAMAGE!" );
-                break;
-            case 1:
-                sb.append( "a slight advantage." );
-                break;
-            case 2:
-                sb.append( "a slight disadvantage." );
-            default:
-                sb.append( "smooth moves :)" );
+        if (rulecode != 0) {
+            sb.append(" resulted in ");
+            switch (rulecode) {
+                case -2:
+                    sb.append("total failure!");
+                    break;
+                case -1:
+                    sb.append("INSANE DAMAGE!");
+                    break;
+                case 1:
+                    sb.append("a slight advantage.");
+                    break;
+                case 2:
+                    sb.append("a slight disadvantage.");
+                    break;
+            }
         }
 
 
         return sb.toString();
     }
 
-    @Override
-    public float calculateDamage(OldActor opponent) {
-        float outDamage = this.getDamage();
-        Random rand = new Random();
+    public float calculateDamage(Rules rules) {
+
+        virtualCritical = false;
+        if(rules.criticalRule(this.host.getCriticalChance())){
+            this.virtualCritical = true;
+        }
+
+        float outDamage = this.host.getDamage();
+
+
+
 
         if(virtualCritical) {
             // Critical hit!
-            outDamage *= 2;
+            outDamage *= Finetuners.CRITICAL_DAMAGE_MULTIPLIER;
         }
 
-        short rulecode = new Rules(this, opponent).checkRules();
+
+        short rulecode = rules.checkRules();
 
         switch (rulecode) {
             case -2:
@@ -93,31 +123,28 @@ public class CardWrapper{
         return outDamage;
     }
 
-    @Override
     public void resetVirtualHealth() {
-        this.setVirtualHealth(this.getHealth());
+        this.setVirtualHealth(this.host.getHealth());
     }
 
-    @Override
     public float calculateVirtualHealth(float damage) {
 
-        float cVH = this.getVirtualHealth();
-        cVH = cVH -= damage;
+        float tempVirtualHealth = this.getVirtualHealth();
+        tempVirtualHealth -= damage;
 
-        return cVH;
-    }
+        // ----- APPLY EFFECTS ----- //
+        for (StatusEffect se : this.statusEffects) {
+            tempVirtualHealth -= se.iterateValue();
 
-    @Override
-    public void updateValues() {
-        if(new Random().nextDouble(0,1) < this.getCriticalChance()) {
-            this.virtualCritical = true;
-        } else {
-            this.virtualCritical = false;
+            if(se.getLifetime()<=0){
+                this.statusEffects.remove(se);
+            }
         }
 
+
+        return tempVirtualHealth;
     }
 
-    @Override
     public boolean isDead() {
         if (this.getVirtualHealth() <= 0 ){
             return true;
@@ -125,12 +152,10 @@ public class CardWrapper{
         return false;
     }
 
-    @Override
     public void setVirtualHealth(float health) {
         this.virtualHealth = health;
     }
 
-    @Override
     public float getVirtualHealth() {
         return this.virtualHealth;
     }
@@ -140,17 +165,17 @@ public class CardWrapper{
         StringBuilder sb = new StringBuilder();
         sb.append("This is a ");
 
-        if (this.getMonster() == Monster.SPELL){
+        if (this.host.getMonster() == Monster.SPELL){
             sb.append("Spell Card ");
         }else{
             sb.append("Monster Card ");
         }
 
         sb.append("with the type ");
-        sb.append(this.getElement().toString());
+        sb.append(this.host.getElement().toString());
 
         sb.append(" and the damage ");
-        sb.append(this.getDamage());
+        sb.append(this.host.getDamage());
 
         return sb.toString();
     }

@@ -34,8 +34,8 @@ CREATE TABLE cards (
 	id TEXT PRIMARY KEY,
 	name TEXT NOT NULL,
 	damage FLOAT NOT NULL DEFAULT 10,
-	health FLOAT NOT NULL DEFAULT 20,
-	critical_chance FLOAT NOT NULL DEFAULT 0.1,
+	health FLOAT NOT NULL DEFAULT 40,
+	critical_chance FLOAT NOT NULL DEFAULT 0.25,
 	element_type TEXT NOT NULL DEFAULT 'NORMAL',
 	monster_type TEXT NOT NULL DEFAULT 'SPELL'
 );
@@ -57,10 +57,10 @@ BEGIN
   NEW.last_updated = NOW();
   IF ((TG_OP = 'INSERT' AND NEW.deck = TRUE) OR (NEW.deck = TRUE AND OLD.deck = FALSE)) THEN
     -- remove the first card from the deck if there are already 5 cards
-    IF (SELECT COUNT(*) FROM users_cards WHERE user_id = NEW.user_id AND deck = TRUE) >= 5 THEN
+    IF (SELECT COUNT(*) FROM users_cards WHERE user_id = NEW.user_id AND deck = TRUE) >= 4 THEN
       UPDATE users_cards SET deck = FALSE WHERE user_id = NEW.user_id AND id = (SELECT id FROM users_cards WHERE user_id = NEW.user_id AND deck = TRUE ORDER BY last_updated LIMIT 1);
     END IF;
-  ELSEIF (TG_OP = 'INSERT' AND (SELECT COUNT(*) FROM users_cards WHERE user_id = NEW.user_id AND deck = TRUE) < 5) THEN
+  ELSEIF (TG_OP = 'INSERT' AND (SELECT COUNT(*) FROM users_cards WHERE user_id = NEW.user_id AND deck = TRUE) < 4) THEN
       NEW.deck = TRUE;
   END IF;
   RETURN NEW;
@@ -107,16 +107,6 @@ CREATE TABLE packs_cards (
 	id SERIAL PRIMARY KEY,
 	pack_id INT REFERENCES packs(id) ON DELETE CASCADE,
 	card_id TEXT REFERENCES cards(id) ON DELETE CASCADE
-);
-
--- create the battles table
-DROP TABLE IF EXISTS battles CASCADE;
-CREATE TABLE battles (
-	id SERIAL PRIMARY KEY,
-	user1 TEXT REFERENCES users(username) ON DELETE CASCADE,
-	user2 TEXT REFERENCES users(username) ON DELETE CASCADE,
-	log TEXT NOT NULL,
-	result SMALLINT NOT NULL
 );
 
 -- create the deals table

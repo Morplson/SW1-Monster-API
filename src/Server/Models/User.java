@@ -38,8 +38,8 @@ public class User implements Serializable {
     ArrayList<Card> deck = new ArrayList<Card>();
 
     @JsonCreator
-    public User(@JsonProperty(value = "Username", required = true) String username,
-                @JsonProperty(value = "Password", required = true) String password,
+    public User(@JsonProperty(value = "Username") String username,
+                @JsonProperty(value = "Password") String password,
                 @JsonProperty(value = "Coins") Integer coins,
                 @JsonProperty(value = "Name") String name,
                 @JsonProperty(value = "Bio") String bio,
@@ -116,6 +116,30 @@ public class User implements Serializable {
         }
         sb.append("]\n");
         return sb.toString();
+    }
+
+    public void setCoins(Integer coins) {
+        this.coins = coins;
+    }
+
+    public void setEloValue(Integer eloValue) {
+        this.eloValue = eloValue;
+    }
+
+    public ArrayList<Card> getStack() {
+        return stack;
+    }
+
+    public void setStack(ArrayList<Card> stack) {
+        this.stack = stack;
+    }
+
+    public ArrayList<Card> getDeck() {
+        return deck;
+    }
+
+    public void setDeck(ArrayList<Card> deck) {
+        this.deck = deck;
     }
 
     public String getUsername() {

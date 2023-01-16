@@ -1,9 +1,10 @@
-package Server.RouteWorkers;
+package Server.RouteWorkers.UserWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
+import Server.RouteWorkers.RouteWorker;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Map;

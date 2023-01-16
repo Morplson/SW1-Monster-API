@@ -1,5 +1,6 @@
 package Server.Models.Cards;
 
+import Server.Misc.Finetuners;
 import Server.Models.Serializable;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -35,12 +36,12 @@ public class Card implements Serializable {
         this.id = id;
         this.name = name;
         this.damage = damage;
-        this.health = health != null ? health : damage*2;
+        this.health = health != null ? health : damage*Finetuners.UNSET_HEALTH_MULTIPLIER;
 
         this.element = element != null ? element : inferElementFromName(name);
         this.monster = monster != null ? monster : inferMonsterFromName(name);
 
-        this.criticalChance = criticalChance;
+        this.criticalChance = criticalChance != null ? criticalChance : 10/(1+damage*Finetuners.UNSET_CRITICAL_MULTIPLIER);
     }
 
     private Element inferElementFromName(String name) {
