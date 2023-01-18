@@ -7,16 +7,13 @@ import Server.Models.Cards.Effects.Healing;
 import Server.Models.Cards.Effects.StatusEffect;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Random;
 
 public class CardWrapper{
     Card host;
 
     private float virtualHealth = 0f;
-    private Burning burning = new Burning(0f,0);
-    private Healing healing = new Healing(0f,0);
-    private Bleeding bleeding = new Bleeding(0f,0);
-
     private ArrayList<StatusEffect> statusEffects = new ArrayList<StatusEffect>();
     private boolean virtualCritical = false;
 
@@ -133,10 +130,11 @@ public class CardWrapper{
         tempVirtualHealth -= damage;
 
         // ----- APPLY EFFECTS ----- //
-        for (StatusEffect se : this.statusEffects) {
+        for (int i = 0; i < this.statusEffects.size(); i++) {
+            StatusEffect se = this.statusEffects.get(i);
             tempVirtualHealth -= se.iterateValue();
 
-            if(se.getLifetime()<=0){
+            if(!se.isActive()){
                 this.statusEffects.remove(se);
             }
         }
@@ -181,5 +179,11 @@ public class CardWrapper{
     }
 
 
+    public ArrayList<StatusEffect> getStatusEffects() {
+        return statusEffects;
+    }
 
+    public void setStatusEffects(ArrayList<StatusEffect> statusEffects) {
+        this.statusEffects = statusEffects;
+    }
 }
