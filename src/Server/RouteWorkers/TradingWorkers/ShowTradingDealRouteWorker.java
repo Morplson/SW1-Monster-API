@@ -1,16 +1,18 @@
-package Server.RouteWorkers.CardWorkers;
+package Server.RouteWorkers.TradingWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
 import Server.Models.Cards.Card;
+import Server.Models.Trade;
+import Server.Models.User;
 import Server.RouteWorkers.RouteWorker;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.util.ArrayList;
 
-public class ShowUserDeckRouteWorker implements RouteWorker {
+public class ShowTradingDealRouteWorker implements RouteWorker {
 
     @Override
     public HTTPPackage process(HTTPPackage request, MiddlewareRegister mr) {
@@ -20,21 +22,26 @@ public class ShowUserDeckRouteWorker implements RouteWorker {
 
         // ---- Check Authentication ---- //
         String token = request.getHeader("Authorization");
+
+        if (!sm.isLoggedIn(token)) {
+            return HTTPPackage.generateErrorResponse(401, "Unauthorized", "Not logged in");
+        }
+
         String username = sm.getUsername(token);
 
         if(!sm.hasAccess(token, username)){
-            return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource package.new");
+            return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource user."+username+".cards");
         }
 
         // ---- Process in Database ---- //
-        ArrayList<Card> cards = new ArrayList<Card>();
+        ArrayList<Trade> trades = new ArrayList<Trade>();
         try {
             db.open();
 
-            cards = db.getCardsByUsername(username, true);
+            trades = db.getAllTrades();
 
         } catch (Exception e) {
-            return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
+            return HTTPPackage.generateErrorResponse(500, "Processing Error", e.getMessage());
         }finally {
             db.close();
         }
@@ -42,32 +49,33 @@ public class ShowUserDeckRouteWorker implements RouteWorker {
 
         // ---- Generate Response ---- //
         StringBuilder body = new StringBuilder();
-        if( request.getQuery("format").equalsIgnoreCase("plain") ) {
+        boolean plain = request.getQuery("format").equalsIgnoreCase("plain");
+        if( plain ) {
             body.append("####################################\n");
             body.append("#                                  #\n");
-            body.append("#   User Cards (inside of deck)    #\n");
+            body.append("#     Open Trades                  #\n");
             body.append("#                                  #\n");
             body.append("####################################\n");
-            for( Card card : cards){
-                body.append(card.toString()).append(System.lineSeparator());
+            for( Trade trade : trades){
+                body.append(trade.toString()).append(System.lineSeparator());
             }
+
         } else {
             body.append("[");
-            for( Card card : cards){
+            for( Trade trade : trades){
                 try {
-                    body.append(card.toJSON()).append(", ");
+                    body.append(trade.toJSON()).append(", ");
                 }
                 catch (JsonProcessingException e) {
                     e.printStackTrace();
                 }
             }
-            if (body.length() > 2) {
+            if(body.length()>2) {
                 body.deleteCharAt(body.length() - 2);
             }
             body.append("]");
         }
 
-        return HTTPPackage.generateBasicResponse(body.toString());
-
+        return HTTPPackage.generateBasicResponse(body.toString(), true);
     }
 }

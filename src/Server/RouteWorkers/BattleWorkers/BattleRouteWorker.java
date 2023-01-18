@@ -73,6 +73,7 @@ public class BattleRouteWorker implements RouteWorker {
 
         User opponent = battle.getOpponentByPlayerName(username);
 
+
         try{
             db.open();
 
@@ -80,6 +81,9 @@ public class BattleRouteWorker implements RouteWorker {
                 if (username.equalsIgnoreCase(battle.getWinnerUsername())) {
                     // winner
                     System.out.println("winner");
+
+                    user.setCoins(user.getCoins()+10);
+                    user.setWins(user.getWins()+1);
 
                     ArrayList<Card> opponentDeck = opponent.getDeck();
                     for (Card card: opponentDeck) {
@@ -98,6 +102,9 @@ public class BattleRouteWorker implements RouteWorker {
                     // loser
                     System.out.println("loser");
 
+                    user.setCoins(user.getCoins()+6);
+                    user.setLosses(user.getLosses()+1);
+
                     if (plain) {
                         body.append("You has lost the battle!\n");
                     } else {
@@ -107,6 +114,8 @@ public class BattleRouteWorker implements RouteWorker {
             } else {
                 //draw
                 System.out.println("draw");
+
+                user.setCoins(user.getCoins()+3);
 
                 if (plain) {
                     body.append("The battle has ended in a draw!\n");
@@ -118,8 +127,8 @@ public class BattleRouteWorker implements RouteWorker {
             int opponentElo = opponent.getEloValue();
             int thisElo = user.getEloValue();
 
-            double  expected = expectedScore(thisElo, opponentElo);
-            int earnedElo = (int) Math.round(userpoints * (1-expected));
+            double expected = calculateChance(thisElo, opponentElo);
+            int earnedElo = (int) Math.floor(userpoints * expected);
 
             user.setEloValue(thisElo+earnedElo);
 
@@ -145,12 +154,15 @@ public class BattleRouteWorker implements RouteWorker {
         }
 
 
-        return HTTPPackage.generateBasicResponse(body.toString(), plain);
+        return HTTPPackage.generateBasicResponse(body.toString(), true);
 
 
     }
 
-    private static double  expectedScore(int R_a, int R_b) {
-        return (1 / (1 + Math.pow(10, (R_b - R_a) / 400)));
+    public double calculateChance(int player1Score, int player2Score) {
+        int totalScore = player1Score + player2Score;
+        double lossChance = (double) player2Score / totalScore;
+        return lossChance;
     }
+
 }

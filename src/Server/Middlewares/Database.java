@@ -3,6 +3,7 @@ package Server.Middlewares;
 import Server.Models.Cards.Card;
 import Server.Models.Cards.Element;
 import Server.Models.Cards.Monster;
+import Server.Models.Trade;
 import Server.Models.User;
 
 import java.sql.*;
@@ -41,7 +42,7 @@ public class Database implements Middleware {
         HashMap<String, Integer> results = new HashMap<String, Integer>();
 
         Statement stmt = this.connection.createStatement();
-        ResultSet rs = stmt.executeQuery("SELECT username, elo_value FROM users ORDER BY elo_value DESC");
+        ResultSet rs = stmt.executeQuery("SELECT username, elo_value FROM users");
 
         while (rs.next()) {
             String username = rs.getString("username");
@@ -49,6 +50,10 @@ public class Database implements Middleware {
 
             results.put(username, eloValue);
         }
+
+
+
+
 
         rs.close();
         stmt.close();
@@ -83,6 +88,14 @@ public class Database implements Middleware {
             insertQuery.append("elo_value, ");
             counter++;
         }
+        if (user.getWins() != null) {
+            insertQuery.append("wins, ");
+            counter++;
+        }
+        if (user.getLosses() != null) {
+            insertQuery.append("losses, ");
+            counter++;
+        }
         insertQuery.deleteCharAt(insertQuery.length() - 2); // remove the last comma and space
         insertQuery.append(") VALUES (");
         for (int i = 0; i < counter; i++) {
@@ -114,6 +127,12 @@ public class Database implements Middleware {
         }
         if (user.getEloValue() != null) {
             stmt.setInt(index++, user.getEloValue());
+        }
+        if (user.getWins() != null) {
+            stmt.setInt(index++, user.getWins());
+        }
+        if (user.getLosses() != null) {
+            stmt.setInt(index++, user.getLosses());
         }
 
         return stmt.executeUpdate();
@@ -167,9 +186,11 @@ public class Database implements Middleware {
             String bio = rs.getString("bio");
             String image = rs.getString("image");
             int elo_value = rs.getInt("elo_value");
+            int wins = rs.getInt("wins");
+            int losses = rs.getInt("losses");
             ArrayList<Card> stack = getCardsByUsername(username, false);
             ArrayList<Card> deck = getCardsByUsername(username, true);
-            user = new User(username, password, coins, name, bio, image, elo_value, stack, deck);
+            user = new User(username, password, coins, name, bio, image, elo_value, wins, losses, stack, deck);
         }
 
         rs.close();
@@ -236,6 +257,12 @@ public class Database implements Middleware {
         if (user.getEloValue() != null) {
             updateQuery.append("elo_value = ?, ");
         }
+        if (user.getWins() != null) {
+            updateQuery.append("wins = ?, ");
+        }
+        if (user.getLosses() != null) {
+            updateQuery.append("losses = ?, ");
+        }
         updateQuery.deleteCharAt(updateQuery.length() - 2); // remove the last comma and space
         updateQuery.append(" WHERE username = ?");
 
@@ -262,6 +289,12 @@ public class Database implements Middleware {
         }
         if (user.getEloValue() != null) {
             stmt.setInt(index++, user.getEloValue());
+        }
+        if (user.getWins() != null) {
+            stmt.setInt(index++, user.getWins());
+        }
+        if (user.getLosses() != null) {
+            stmt.setInt(index++, user.getLosses());
         }
         stmt.setString(index, username);
 
@@ -486,5 +519,158 @@ public class Database implements Middleware {
         stmt.executeUpdate();
     }
 
+    public Card getCardById(String cardId) throws SQLException {
+        // ----- BUILDING QUERY ----- //
+        String sql = "SELECT * FROM cards WHERE id = ?";
 
-}
+        // ----- SENDING QUERY ----- //
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, cardId);
+
+        // ----- EXECUTE QUERY ----- //
+        ResultSet rs = stmt.executeQuery();
+
+        // ----- PROCESSING RESULT ----- //
+        if (rs.next()) {
+            String id = rs.getString("id");
+            String name = rs.getString("name");
+            float damage = rs.getFloat("damage");
+            float health = rs.getFloat("health");
+            float critical_chance = rs.getFloat("critical_chance");
+            String element_type = rs.getString("element_type");
+            String monster_type = rs.getString("monster_type");
+            Element element = element_type != null ? Element.valueOf(element_type) : null;
+            Monster monster = monster_type!= null? Monster.valueOf(monster_type): null;
+            return new Card(id, name, damage, health, element, monster, critical_chance);
+        } else {
+            throw new SQLException("Card with id " + cardId + " not found.");
+        }
+    }
+
+
+
+    // -------------- TRADING ------------------------------------------------------------------------------------------
+    public void tradeCard(String fromUserId, Trade trade) throws SQLException {
+        // First, check if the card exists for the user
+        String sql = "SELECT * FROM users_cards WHERE user_id = ? AND card_id = ?";
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, fromUserId);
+        stmt.setString(2, trade.getCardToTrade());
+        ResultSet rs = stmt.executeQuery();
+        if(!rs.next()){
+            throw new SQLException("This card doesn't belong to this user");
+        }
+
+        // Then delete the card from the user
+        sql = "DELETE FROM users_cards WHERE user_id = ? AND card_id = ?";
+        stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, fromUserId);
+        stmt.setString(2, trade.getCardToTrade());
+        stmt.executeUpdate();
+
+        // Finally, insert the card into the trades table
+        sql = "INSERT INTO trades (id, publisher, card_id, wanted_element, wanted_monster, wanted_damage) VALUES (?,?,?,?,?,?)";
+        stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, trade.getId());
+        stmt.setString(2, fromUserId);
+        stmt.setString(3, trade.getCardToTrade());
+        stmt.setString(4, (trade.getElement()!=null)?trade.getType().name():null);
+        stmt.setString(5, (trade.getType()!=null)?trade.getType().name():null);
+        stmt.setInt(6, trade.getMinimumDamage());
+        stmt.executeUpdate();
+    }
+
+
+    public void returnTradedCard(String tradeId, String userId) throws SQLException {
+        // First, check if the trade exists
+        String sql = "SELECT * FROM trades WHERE id = ?";
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, tradeId);
+        ResultSet rs = stmt.executeQuery();
+        if(!rs.next()){
+            throw new SQLException("This trade doesn't exist");
+        }
+
+        // Then retrieve the card id from the trade
+        String cardId = rs.getString("card_id");
+
+        // Then delete the trade
+        sql = "DELETE FROM trades WHERE id = ?";
+        stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, tradeId);
+        stmt.executeUpdate();
+
+        // Finally, insert the card into the user's cards table
+        sql = "INSERT INTO users_cards (user_id, card_id) VALUES (?,?)";
+        stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, userId);
+        stmt.setString(2, cardId);
+        stmt.executeUpdate();
+    }
+
+    public boolean checkUsernameByTradeId(String tradeId, String username) throws SQLException {
+        // Send query
+        String sql = "SELECT publisher FROM trades WHERE id = ?";
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, tradeId);
+        ResultSet rs = stmt.executeQuery();
+
+        // Process result
+        if (rs.next()) {
+            String publisher = rs.getString("publisher");
+            return publisher.equals(username);
+        } else {
+            throw new SQLException("Trade with id " + tradeId + " not found.");
+        }
+    }
+
+
+
+    public ArrayList<Trade> getAllTrades() throws SQLException {
+        // Send query
+        String sql = "SELECT * FROM trades";
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        ResultSet rs = stmt.executeQuery();
+
+        // Process result
+        ArrayList<Trade> trades = new ArrayList<Trade>();
+        while (rs.next()) {
+            String id = rs.getString("id");
+            String publisher = rs.getString("publisher");
+            String cardId = rs.getString("card_id");
+            String wantedElement = rs.getString("wanted_element");
+            String wantedMonster = rs.getString("wanted_monster");
+            Integer wantedDamage = rs.getInt("wanted_damage");
+
+            Trade trade = new Trade(id, cardId, publisher, wantedMonster, wantedElement, wantedDamage);
+            trades.add(trade);
+        }
+
+        return trades;
+    }
+
+    public Trade getTradeById(String tradeId) throws SQLException {
+        // send query
+        String sql = "SELECT * FROM trades WHERE id = ?";
+        PreparedStatement stmt = this.connection.prepareStatement(sql);
+        stmt.setString(1, tradeId);
+        ResultSet rs = stmt.executeQuery();
+
+        // process result
+        if (rs.next()) {
+            String id = rs.getString("id");
+            String cardToTrade = rs.getString("card_id");
+            String publisher = rs.getString("publisher");
+            String wanted_element = rs.getString("wanted_element");
+            String wanted_monster = rs.getString("wanted_monster");
+            Integer wanted_damage = rs.getInt("wanted_damage");
+
+            return new Trade(id, cardToTrade, publisher, wanted_monster, wanted_element, wanted_damage);
+        } else {
+            throw new SQLException("Trade with id " + tradeId + " not found.");
+        }
+    }
+
+
+
+        }

@@ -56,7 +56,7 @@ public class Battle {
         ArrayList<Card> deckB = this.playerB.getDeck();
         for (int i = 0; i < deckB.size(); i++) {
             this.virtualDeckB.add(
-                    new CardWrapper(deckA.get(i))
+                    new CardWrapper(deckB.get(i))
             );
         }
     }
@@ -81,13 +81,13 @@ public class Battle {
         } else if (virtualDeckA.size() <= 0) {
             winner = 1;
             pointsPlayerA += 100;
-            pointsPlayerB -= 30;
+            pointsPlayerB -= 250;
 
             System.out.println("Player A won: "+ playerA.getUsername());
         } else if (virtualDeckB.size() <= 0) {
             winner = 2;
             pointsPlayerB += 100;
-            pointsPlayerA -= 30;
+            pointsPlayerA -= 250;
 
             System.out.println("Player A won: "+ playerB.getUsername());
 
@@ -188,7 +188,7 @@ public class Battle {
         //log
         roundLog.append(stagedCardA.getHost().getName()).append("-health: ");
         roundLog.append("(").append(previousHealthOfA).append(") => (").append(afterHealthOfA).append(")");
-        roundLog.append(" ⚔ ");
+        roundLog.append(" X ");
         roundLog.append(stagedCardB.getHost().getName()).append("-health: ");
         roundLog.append("(").append(previousHealthOfB).append(") => (").append(afterHealthOfB).append(")");
         roundLog.append(System.lineSeparator());

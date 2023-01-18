@@ -31,6 +31,11 @@ public class User implements Serializable {
     private String image = null;
     @JsonProperty(value = "EloValue")
     private Integer eloValue = null;
+    @JsonProperty(value = "Wins")
+    private Integer wins = null;
+    @JsonProperty(value = "Losses")
+    private Integer losses = null;
+
 
     @JsonProperty(value = "Stack")
     ArrayList<Card> stack = new ArrayList<Card>();
@@ -45,6 +50,8 @@ public class User implements Serializable {
                 @JsonProperty(value = "Bio") String bio,
                 @JsonProperty(value = "Image") String image,
                 @JsonProperty(value = "EloValue") Integer elo_value,
+                @JsonProperty(value = "Wins") Integer wins,
+                @JsonProperty(value = "Losses") Integer losses,
                 @JsonProperty(value = "Stack") ArrayList<Card> stack,
                 @JsonProperty(value = "Deck") ArrayList<Card> deck) {
         this.username = username;
@@ -54,6 +61,8 @@ public class User implements Serializable {
         this.bio = bio;
         this.image = image;
         this.eloValue = elo_value;
+        this.wins = wins;
+        this.losses = losses;
         this.stack = stack;
         this.deck = deck;
     }
@@ -196,5 +205,21 @@ public class User implements Serializable {
 
     public void setEloValue(int elo_value) {
         this.eloValue = elo_value;
+    }
+
+    public Integer getWins() {
+        return wins;
+    }
+
+    public void setWins(Integer wins) {
+        this.wins = wins;
+    }
+
+    public Integer getLosses() {
+        return losses;
+    }
+
+    public void setLosses(Integer losses) {
+        this.losses = losses;
     }
 }

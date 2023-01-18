@@ -19,7 +19,9 @@ CREATE TABLE users (
 	name TEXT NOT NULL DEFAULT '',
 	bio TEXT NOT NULL DEFAULT '',
 	image TEXT NOT NULL DEFAULT '',
-	elo_value INT NOT NULL DEFAULT 1000
+	elo_value INT NOT NULL DEFAULT 1000,
+	wins INT NOT NULL DEFAULT 0,
+	losses INT NOT NULL DEFAULT 0
 );
 
 --INSERT INTO users (username, password, token, access_domain)
@@ -78,7 +80,7 @@ CREATE OR REPLACE FUNCTION check_deck_limit_on_delete() RETURNS TRIGGER AS $$
 BEGIN
   IF (OLD.deck = TRUE) THEN
     -- check if there are any other cards in the deck
-    IF (SELECT COUNT(*) FROM users_cards WHERE user_id = OLD.user_id AND deck = TRUE) = 1 THEN
+    IF (SELECT COUNT(*) FROM users_cards WHERE user_id = OLD.user_id AND deck = TRUE) < 4 THEN
       -- if not, set a random card to deck=true
       UPDATE users_cards SET deck = TRUE WHERE user_id = OLD.user_id AND id = (SELECT id FROM users_cards WHERE user_id = OLD.user_id AND deck = FALSE ORDER BY RANDOM() LIMIT 1);
     END IF;
@@ -110,16 +112,29 @@ CREATE TABLE packs_cards (
 );
 
 -- create the deals table
-DROP TABLE IF EXISTS deals CASCADE;
-CREATE TABLE deals (
+DROP TABLE IF EXISTS trades CASCADE;
+CREATE TABLE trades (
 	id TEXT PRIMARY KEY,
+	publisher TEXT REFERENCES users(username) ON DELETE CASCADE,
 	card_id TEXT REFERENCES cards(id) ON DELETE CASCADE,
-	wanted_element TEXT, -- IF NULL THEN ANY element
-	wanted_monster TEXT, -- IF NULL THEN ANY monster
-	wanted_damage FLOAT -- IF NULL THEN ANY damage
+	wanted_element TEXT DEFAULT NULL, -- IF NULL THEN ANY element
+	wanted_monster TEXT DEFAULT NULL, -- IF NULL THEN ANY monster
+	wanted_damage INT DEFAULT NULL -- IF NULL THEN ANY damage
 );
 
 
 select * from users;
 select * from cards;
 select * from packs;
+select * from users_cards;
+select * from packs_cards;
+select * from trades;
+
+
+
+;
+
+
+
+
+

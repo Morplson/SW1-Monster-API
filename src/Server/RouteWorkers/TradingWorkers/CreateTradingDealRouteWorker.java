@@ -1,16 +1,19 @@
-package Server.RouteWorkers.CardWorkers;
+package Server.RouteWorkers.TradingWorkers;
 
 import Server.HTTPUtil.HTTPPackage;
 import Server.Middlewares.Database;
 import Server.Middlewares.MiddlewareRegister;
 import Server.Middlewares.SessionManager;
 import Server.Models.Cards.Card;
+import Server.Models.Trade;
 import Server.RouteWorkers.RouteWorker;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 
-public class ShowUserCardsRouteWorker implements RouteWorker {
+public class CreateTradingDealRouteWorker implements RouteWorker {
 
     @Override
     public HTTPPackage process(HTTPPackage request, MiddlewareRegister mr) {
@@ -31,12 +34,26 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
             return HTTPPackage.generateErrorResponse(403, "Access denied", "Token "+token+" has no authority over resource user."+username+".cards");
         }
 
+        // ---- Parse JSON ---- //
+        String json = request.getBodyPlain();
+        Trade trade;
+        try {
+            trade = Trade.fromJson(json);
+        } catch (Exception e) {
+            return HTTPPackage.generateErrorResponse(400, "Invalid JSON","Invalid JSON: " + e.getMessage());
+        }
+
+        System.out.println(trade.toFancyString());
+
         // ---- Process in Database ---- //
-        ArrayList<Card> cards = new ArrayList<Card>();
+        ArrayList<Trade> trades = new ArrayList<Trade>();
         try {
             db.open();
 
-            cards = db.getCardsByUsername(username, false);
+            db.tradeCard(
+                    username,
+                    trade
+            );
 
         } catch (Exception e) {
             return HTTPPackage.generateErrorResponse(500, "Database Error","Database Error: " + e.getMessage());
@@ -46,34 +63,7 @@ public class ShowUserCardsRouteWorker implements RouteWorker {
 
 
         // ---- Generate Response ---- //
-        StringBuilder body = new StringBuilder();
         boolean plain = request.getQuery("format").equalsIgnoreCase("plain");
-        if( plain ) {
-            body.append("####################################\n");
-            body.append("#                                  #\n");
-            body.append("#     User Cards                   #\n");
-            body.append("#                                  #\n");
-            body.append("####################################\n");
-            for( Card card : cards){
-                body.append(card.toString()).append(System.lineSeparator());
-            }
-        } else {
-            body.append("[");
-            for( Card card : cards){
-                try {
-                    body.append(card.toJSON()).append(", ");
-                }
-                catch (JsonProcessingException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (body.length() > 2) {
-                body.deleteCharAt(body.length() - 2);
-            }
-            body.append("]");
-        }
-
-        return HTTPPackage.generateBasicResponse(body.toString());
-
+        return HTTPPackage.generateBasicResponse("Put card into trading", plain);
     }
 }

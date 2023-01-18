@@ -7,6 +7,10 @@ import Server.RouteWorkers.BattleWorkers.BattleRouteWorker;
 import Server.RouteWorkers.BattleWorkers.ShowScoreboardRouteWorker;
 import Server.RouteWorkers.BattleWorkers.ShowUserStatsRouteWorker;
 import Server.RouteWorkers.CardWorkers.*;
+import Server.RouteWorkers.TradingWorkers.CreateTradingDealRouteWorker;
+import Server.RouteWorkers.TradingWorkers.DeleteTradingDealRouteWorker;
+import Server.RouteWorkers.TradingWorkers.ShowTradingDealRouteWorker;
+import Server.RouteWorkers.TradingWorkers.TradeRouteWorker;
 import Server.RouteWorkers.UserWorkers.*;
 import Server.Routing.InvalidRouteException;
 import Server.Routing.RoutingTable;
@@ -78,23 +82,25 @@ public class Server implements Runnable{
 
 
         //battle
-        routingTable.addPost("/battles", new BattleRouteWorker());
+        routingTable.addPost("\\/battles", new BattleRouteWorker());
         //stats (??? own elo I think?)
-        routingTable.addGet("/stats", new ShowUserStatsRouteWorker());
+        routingTable.addGet("\\/stats", new ShowUserStatsRouteWorker());
         //scoreboard
-        routingTable.addGet("/score", new ShowScoreboardRouteWorker());
+        routingTable.addGet("\\/score", new ShowScoreboardRouteWorker());
+
+
+
+
+        //check trading deals
+        routingTable.addGet("\\/tradings", new ShowTradingDealRouteWorker());
+        //create trading deal
+        routingTable.addPost("\\/tradings", new CreateTradingDealRouteWorker());
+        //delete trading deal
+        routingTable.addDelete("\\/tradings\\/\\S+", new DeleteTradingDealRouteWorker());
+        //do a trade
+        routingTable.addPost("\\/tradings\\/\\S+", new TradeRouteWorker());
 
         /**
-
-
-         //check trading deals
-        routingTable.addGet("/tradings", new ShowTradingDealRouteWorker());
-        //create trading deal
-        routingTable.addPost("/tradings", new CreateTradingDealRouteWorker());
-        //delete trading deal
-        routingTable.addDelete("/tradings/*", new DeleteTradingDealRouteWorker());
-        //do a trade
-        routingTable.addPost("/tradings/*", new TradeRouteWorker());
 
          */
 
