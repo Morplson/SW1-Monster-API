@@ -64,7 +64,7 @@ public class SessionManager implements Middleware{
 
     public String getUsername(String token) {
         AccessData ad = accessData.get(token);
-        return ad.getUsername();
+        return ad!=null?ad.getUsername():null;
     }
 
     public HashMap<String, AccessData> getAccessData() {

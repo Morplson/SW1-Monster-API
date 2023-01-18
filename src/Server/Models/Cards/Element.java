@@ -5,6 +5,6 @@ public enum Element {
     WATER,
     FIRE;
 
-
+    //LIGNTNING,EARTH,ICE,DARKNESS
 
 }

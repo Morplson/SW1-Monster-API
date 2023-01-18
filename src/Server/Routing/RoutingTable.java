@@ -129,4 +129,20 @@ public class RoutingTable {
         throw new InvalidRouteException();
     }
 
+
+    public HashMap<HTTPMethod, HashMap<String, RouteWorker>> getUriList() {
+        return uriList;
+    }
+
+    public void setUriList(HashMap<HTTPMethod, HashMap<String, RouteWorker>> uriList) {
+        this.uriList = uriList;
+    }
+
+    public MiddlewareRegister getMiddleware() {
+        return middleware;
+    }
+
+    public void setMiddleware(MiddlewareRegister middleware) {
+        this.middleware = middleware;
+    }
 }

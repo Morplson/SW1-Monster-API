@@ -1,5 +1,4 @@
 import Server.Models.Cards.*;
-import Server.Models.Cards.Effects.Burning;
 import Server.Models.Cards.Effects.Healing;
 import Server.Models.Cards.Effects.StatusEffect;
 import org.junit.Before;
@@ -7,13 +6,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-public class BattleTest {
+public class BattleTests {
 
     Card testCard;
     CardWrapper wrapper;
 
     @Before
-    public void init() {
+    public void setup() {
         this.testCard = new Card("testID", "TestCard", 25f, 100f, Element.NORMAL, Monster.KNIGHT, 0f);
         this.wrapper = new CardWrapper(testCard);
     }

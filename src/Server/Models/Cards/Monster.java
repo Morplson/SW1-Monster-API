@@ -10,4 +10,6 @@ public enum Monster{
     KRAKEN,
     ELVE,
     TROLL;
+
+    //GOLEM,ELEMENTAL
 }
